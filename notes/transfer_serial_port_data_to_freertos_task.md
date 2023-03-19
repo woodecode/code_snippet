@@ -14,30 +14,30 @@ QueueHandle_t queue;
 // 串口接收中断程序
 void USART_ISR(void)
 {
-    static int index = 0;
-  	char received_byte = USART_GetByte(USART1);
+  static int index = 0;
+  char received_byte = USART_GetByte(USART1);
 
-  	// 如果接收到连续两个字节0x27和0x03，则开始接收数据
-  	if (index == 0 && received_byte == 0x27) {
-    	buffer[index] = received_byte;
-    	index++;
-  	}
-  	else if (index == 1 && received_byte == 0x03) {
-    	buffer[index] = received_byte;
-    	index++;
-  	}
-  	else if (index > 1) {
-    	buffer[index] = received_byte;
-        index++;
-    	// 如果接收到连续两个字节0x30和0x72，则将数据存入队列
-    	if (buffer[index-2] == 0x30 && buffer[index-1] == 0x72) {
-      		buffer[index-2] = '\0'; // 将结尾标记替换为字符串结束符
-      		int value;
-      		sscanf(buffer, "%d", &value); // 使用sscanf()解析字符串
-      		xQueueSendToBack(queue, &value, portMAX_DELAY); // 将数据存入队列
-      		index = 0; // 重置缓冲区索引
-    	}
-  	}
+  // 如果接收到连续两个字节0x27和0x03，则开始接收数据
+  if (index == 0 && received_byte == 0x27) {
+    buffer[index] = received_byte;
+    index++;
+  }
+  else if (index == 1 && received_byte == 0x03) {
+    buffer[index] = received_byte;
+    index++;
+  }
+  else if (index > 1) {
+    buffer[index] = received_byte;
+    index++;
+    // 如果接收到连续两个字节0x30和0x72，则将数据存入队列
+    if (buffer[index-2] == 0x30 && buffer[index-1] == 0x72) {
+      buffer[index-2] = '\0'; // 将结尾标记替换为字符串结束符
+      int value;
+      sscanf(buffer, "%d", &value); // 使用sscanf()解析字符串
+      xQueueSendToBack(queue, &value, portMAX_DELAY); // 将数据存入队列
+      index = 0; // 重置缓冲区索引
+    }
+  }
 }
 
 // 任务vtask()
